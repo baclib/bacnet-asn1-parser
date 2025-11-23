@@ -1,0 +1,7 @@
+BAClibEventTransitionBits ::= BIT STRING {
+    to-offnormal (0),
+    to-fault (1),
+    to-normal (2),
+    ...
+}
+-- Extensible bit string for future event types

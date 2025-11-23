@@ -1,0 +1,2 @@
+BAClibPercentage ::= REAL (0.0..100.0)
+-- Real with decimal range

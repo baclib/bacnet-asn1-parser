@@ -1,0 +1,2 @@
+BAClibTemperature ::= REAL (-273.15..MAX)
+-- Real with minimum bound

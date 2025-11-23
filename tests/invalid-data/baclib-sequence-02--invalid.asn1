@@ -1,0 +1,5 @@
+BAClibPropertyValue ::= SEQUENCE {
+    property-identifier [0] BAClibPropertyIdentifier,
+    property-value [2] ABSTRACT-SYNTAX.&Type,
+    property-array-index [1] INTEGER OPTIONAL
+-- Invalid: missing closing brace

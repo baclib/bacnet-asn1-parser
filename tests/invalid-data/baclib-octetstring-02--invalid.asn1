@@ -1,0 +1,2 @@
+BAClibAddress ::= OCTET STRING SIZE (10..5)
+-- Invalid: min greater than max in size constraint

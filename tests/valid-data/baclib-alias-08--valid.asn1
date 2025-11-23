@@ -1,0 +1,2 @@
+BAClibUnbounded ::= INTEGER (MIN..MAX)
+-- Unbounded integer range

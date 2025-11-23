@@ -1,0 +1,2 @@
+BAClibPriorityArray ::= SEQUENCE SIZE (16) OF BAClibPriorityValue
+-- Fixed size sequence of 16 priority values

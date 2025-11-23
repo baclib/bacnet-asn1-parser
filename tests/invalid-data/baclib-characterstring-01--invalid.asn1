@@ -1,0 +1,2 @@
+BAClibCharString ::= [APPLICATION X] OCTET STRING
+-- Invalid: non-numeric application tag

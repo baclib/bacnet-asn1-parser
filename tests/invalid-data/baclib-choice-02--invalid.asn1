@@ -1,0 +1,5 @@
+BAClibRecipient ::= CHOICE {
+    Device [0] BAClibObjectIdentifier,
+    address [1] BAClibAddress
+}
+-- Invalid: uppercase item name

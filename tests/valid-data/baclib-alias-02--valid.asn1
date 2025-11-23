@@ -1,0 +1,2 @@
+BAClibUnsigned8 ::= INTEGER (0..255)
+-- Integer with range constraint

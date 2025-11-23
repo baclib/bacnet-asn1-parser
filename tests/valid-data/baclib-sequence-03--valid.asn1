@@ -1,0 +1,4 @@
+BAClibAddress ::= [APPLICATION 1] SEQUENCE {
+    network-number INTEGER,
+    mac-address OCTET STRING SIZE (1..6)
+}

@@ -1,0 +1,2 @@
+BAClibPriority ::= INTEGER (1..16)
+-- Integer with specific range (1-16)

@@ -1,0 +1,8 @@
+BAClibEnumeration02 ::= ENUMERATED {
+    off (0),
+    on (1),
+    auto (2),
+    ...
+}
+-- Enumerated values 0-16 are reserved.
+-- Enumerated values 16-255 may be used by others.

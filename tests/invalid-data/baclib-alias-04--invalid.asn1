@@ -1,0 +1,2 @@
+BAClibBadRange ::= REAL (MAX..MIN)
+-- Invalid: MAX before MIN

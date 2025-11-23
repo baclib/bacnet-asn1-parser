@@ -1,0 +1,5 @@
+BAClibNotification ::= CHOICE
+    change-of-state [0] BAClibChangeOfState,
+    change-of-value [1] BAClibChangeOfValue
+}
+-- Invalid: missing opening brace

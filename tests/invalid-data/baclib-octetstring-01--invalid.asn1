@@ -1,0 +1,2 @@
+BAClibMacAddress ::= OCTET STRING SIZE (1..6
+-- Invalid: missing closing parenthesis in SIZE constraint

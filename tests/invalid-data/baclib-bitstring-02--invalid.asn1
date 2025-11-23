@@ -1,0 +1,6 @@
+BAClibSomeBits ::= BIT STRING {
+    first-bit (0),
+    Next-bit (1),
+    another-bit (2)
+}
+-- Invalid: uppercase in item name

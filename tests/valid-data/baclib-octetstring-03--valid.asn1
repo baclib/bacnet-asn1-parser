@@ -1,0 +1,2 @@
+BAClibNetworkAddress ::= OCTET STRING (SIZE (1..255))
+-- OCTET STRING with SIZE in parentheses

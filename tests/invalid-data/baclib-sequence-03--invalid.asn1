@@ -1,0 +1,5 @@
+baclib-address ::= SEQUENCE {
+    network-number INTEGER,
+    mac-address OCTET STRING
+}
+-- Invalid: type name starts with lowercase

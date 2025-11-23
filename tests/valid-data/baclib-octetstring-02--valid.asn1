@@ -1,0 +1,2 @@
+BAClibMacAddress ::= OCTET STRING SIZE (1..6)
+-- OCTET STRING with size constraint
