@@ -416,3 +416,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# User specific files
+tests/test-report.html
+tests/valid-data/standard-data.asn1

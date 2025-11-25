@@ -1,0 +1,6 @@
+BAClibPropertyValue ::= SEQUENCE {
+    property-identifier [0] BAClibPropertyIdentifier,
+    property-array-index [1] INTEGER OPTIONAL,
+    property-value [2] ABSTRACT-SYNTAX.&Type,
+    priority [3] INTEGER OPTIONAL
+}

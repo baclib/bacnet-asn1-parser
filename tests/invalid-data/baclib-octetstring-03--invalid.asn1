@@ -1,0 +1,2 @@
+BAClibOctet ::= OCTET STRING SIZE
+-- Invalid: SIZE without constraint values

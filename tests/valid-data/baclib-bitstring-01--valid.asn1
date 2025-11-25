@@ -1,0 +1,6 @@
+BAClibStatusFlags ::= BIT STRING {
+    in-alarm (0),
+    fault (1),
+    overridden (2),
+    out-of-service (3)
+}

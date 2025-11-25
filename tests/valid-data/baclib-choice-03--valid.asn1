@@ -1,0 +1,10 @@
+BAClibNotificationParameters ::= CHOICE {
+    change-of-bitstring [0] BAClibChangeOfBitstring,
+    change-of-state [1] BAClibChangeOfState,
+    change-of-value [2] BAClibChangeOfValue,
+    command-failure [3] BAClibCommandFailure,
+    floating-limit [4] BAClibFloatingLimit,
+    out-of-range [5] BAClibOutOfRange,
+    ...
+}
+-- Extensible choice for notification types

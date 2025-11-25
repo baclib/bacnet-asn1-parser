@@ -1,0 +1,5 @@
+BAClibReadAccessSpecification ::= SEQUENCE {
+    object-identifier [0] BAClibObjectIdentifier,
+    list-of-property-references [1] SEQUENCE OF BAClibPropertyReference
+}
+-- Sequence with SEQUENCE OF

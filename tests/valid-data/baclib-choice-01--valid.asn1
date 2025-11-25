@@ -1,0 +1,5 @@
+BAClibTimeStamp ::= CHOICE {
+    time [0] BAClibTime,
+    sequence-number [1] INTEGER,
+    date-time [2] BAClibDateTime
+}

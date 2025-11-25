@@ -1,0 +1,5 @@
+BAClibEnumeration01 ::= ENUMERATED {
+    off (0),
+    on (1),
+    auto (2)
+}

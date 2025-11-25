@@ -1,0 +1,2 @@
+BAClibBadSyntax ::= INTEGER (0..255
+-- Invalid: missing closing parenthesis

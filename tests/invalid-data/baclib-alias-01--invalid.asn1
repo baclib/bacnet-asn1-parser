@@ -1,0 +1,2 @@
+BAClibInvalidRange ::= Unsigned (100..10)
+-- Invalid: min greater than max in range

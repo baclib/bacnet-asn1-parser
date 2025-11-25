@@ -1,0 +1,5 @@
+BAClibObjectIdentifier ::= SEQUENCE {
+    object-type BAClibObjectType
+    instance-number INTEGER
+}
+-- Invalid: missing comma between fields

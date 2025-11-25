@@ -1,0 +1,2 @@
+baclib-lowercase ::= INTEGER
+-- Invalid: type name starts with lowercase

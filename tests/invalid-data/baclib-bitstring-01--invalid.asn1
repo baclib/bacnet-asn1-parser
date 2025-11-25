@@ -1,0 +1,6 @@
+BAClibInfoFlags ::= BIT STRING {
+    has-error (0),
+    is-faulty (1.5),
+    overridden (2)
+}
+-- Invalid: decimal number for bit position

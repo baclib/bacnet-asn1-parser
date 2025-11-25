@@ -1,0 +1,4 @@
+BAClibObjectIdentifier ::= SEQUENCE {
+    object-type BAClibObjectType,
+    instance-number INTEGER
+}

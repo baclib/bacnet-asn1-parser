@@ -1,0 +1,5 @@
+BAClibDateRange ::= SEQUENCE {
+    start-date [0] BAClibDate,
+    end-date [1] BAClibDate OPTIONAL
+}
+-- Date range with optional end date

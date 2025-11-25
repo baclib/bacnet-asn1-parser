@@ -1,0 +1,2 @@
+BAClibCharacterString ::= [APPLICATION 7] OCTET STRING
+-- Character string with application tag

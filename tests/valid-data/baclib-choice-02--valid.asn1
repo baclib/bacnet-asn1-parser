@@ -1,0 +1,5 @@
+BAClibRecipient ::= CHOICE {
+    device [0] BAClibObjectIdentifier,
+    address [1] BAClibAddress
+}
+-- Choice between device reference or direct address

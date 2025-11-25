@@ -1,0 +1,2 @@
+BAClibObjectType ::= BAClibEnumeration
+-- Type alias to another type

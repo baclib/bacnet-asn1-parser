@@ -1,0 +1,31 @@
+{
+    "name": "@baclib/bacnet-asn1-parser",
+    "version": "1.0.0",
+    "description": "Parse ASN.1 notation of BACnet data types",
+    "type": "module",
+    "main": "src/index.js",
+    "scripts": {
+        "test": "node tests/test-suite.js"
+    },
+    "keywords": [
+        "bacnet",
+        "asn1",
+        "parser"
+    ],
+    "author": "The BAClib Initiative <baclib@mailbox.org> (https://github.com/baclib)",
+    "license": "BSD-2-Clause",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/baclib/bacnet-asn1-parser.git"
+    },
+    "bugs": {
+        "url": "https://github.com/baclib/bacnet-asn1-parser/issues"
+    },
+    "homepage": "https://github.com/baclib/bacnet-asn1-parser#readme",
+    "engines": {
+        "node": ">=16.0.0"
+    }
+}

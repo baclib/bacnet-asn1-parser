@@ -1,0 +1,2 @@
+BAClibAnyValue ::= ABSTRACT-SYNTAX.&Type
+-- Abstract syntax type for any value
