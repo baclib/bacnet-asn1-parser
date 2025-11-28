@@ -65,6 +65,8 @@ function parse(content) {
     // Track current position in original content for error reporting
     let currentIndex = 0
 
+    let lastSkippedText = ''
+
     /**
      * Advances to the next parsable character by skipping whitespace and comments.
      * Updates the currentIndex to track position in the original content.
@@ -72,7 +74,10 @@ function parse(content) {
      * @returns {boolean} True if more content remains to parse, false otherwise
      */
     function skipWhitespaceAndComments() {
-        text = text.replace(/^(\s|--.*)+/, '')
+        const originalLength = text.length
+        const newText = text.replace(/^(\s|--.*)+/, '')
+        lastSkippedText = text.substring(0, originalLength - newText.length).replace(/--/g, '').trim().replace(/(\n|\s)+/g, ' ')
+        text = newText
         currentIndex = content.length - text.length
         return text.length > 0
     }
@@ -259,6 +264,9 @@ function parse(content) {
         }
         
         requireMatch('}')
+        if (lastSkippedText.length > 0) {
+            definition.comment = lastSkippedText
+        }
     }
 
     // Parse all definitions in the content
