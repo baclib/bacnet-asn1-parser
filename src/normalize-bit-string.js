@@ -22,7 +22,7 @@ export function normalizeBitString(type) {
         base: 'bit-string',
         vendor: 0,
         items: items.map(item => ({
-            bit: item.number, // Bit position
+            index: item.number, // Bit position
             name: item.name
         })),
         extensible: !!type.extensible,
