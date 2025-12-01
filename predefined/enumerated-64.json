@@ -1,0 +1,8 @@
+{
+    "id": "enumerated-64",
+    "name": "Enumerated64",
+    "base": 9,
+    "vendor": 0,
+    "minimum": "0",
+    "maximum": "18446744073709551615"
+}

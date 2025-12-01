@@ -1,0 +1,8 @@
+{
+    "id": "enumerated",
+    "name": "Enumerated",
+    "base": 9,
+    "vendor": 0,
+    "minimum": "0",
+    "maximum": "MAX"
+}

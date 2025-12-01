@@ -1,0 +1,8 @@
+{
+    "id": "unsigned-32",
+    "name": "Unsigned32",
+    "base": 2,
+    "vendor": 0,
+    "minimum": "0",
+    "maximum": "4294967295"
+}

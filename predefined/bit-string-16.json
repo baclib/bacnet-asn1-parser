@@ -1,0 +1,8 @@
+{
+    "id": "bit-string-16",
+    "name": "BitString16",
+    "base": 8,
+    "vendor": 0,
+    "minimum": "0",
+    "maximum": "15"
+}

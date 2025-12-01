@@ -1,0 +1,8 @@
+{
+    "id": "integer",
+    "name": "Integer",
+    "base": 3,
+    "vendor": 0,
+    "minimum": "MIN",
+    "maximum": "MAX"
+}

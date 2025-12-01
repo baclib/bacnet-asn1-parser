@@ -1,0 +1,8 @@
+{
+    "id": "time",
+    "name": "Time",
+    "base": 11,
+    "vendor": 0,
+    "minimum": null,
+    "maximum": null
+}

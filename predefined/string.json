@@ -1,0 +1,8 @@
+{
+    "id": "string",
+    "name": "String",
+    "base": 7,
+    "vendor": 0,
+    "minimum": null,
+    "maximum": null
+}

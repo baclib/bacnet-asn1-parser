@@ -1,0 +1,8 @@
+{
+    "id": "double",
+    "name": "Double",
+    "base": 5,
+    "vendor": 0,
+    "minimum": "-1.7976931348623157E+308",
+    "maximum": "1.7976931348623157E+308"
+}

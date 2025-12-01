@@ -1,0 +1,8 @@
+{
+    "id": "week-n-day",
+    "name": "BACnetWeekNDay",
+    "base": 19,
+    "vendor": 0,
+    "minimum": null,
+    "maximum": null
+}
