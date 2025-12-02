@@ -1,0 +1,10 @@
+{
+    "alias": "unsigned16",
+    "name": "Unsigned16",
+    "base": 2,
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "65535"
+    }
+}

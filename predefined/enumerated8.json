@@ -1,0 +1,10 @@
+{
+    "alias": "enumerated8",
+    "name": "Enumerated8",
+    "base": 9,
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "255"
+    }
+}

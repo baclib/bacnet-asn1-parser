@@ -1,0 +1,10 @@
+{
+    "alias": "integer16",
+    "name": "Integer16",
+    "base": 3,
+    "series": false,
+    "range": {
+        "minimum": "-32768",
+        "maximum": "32767"
+    }
+}

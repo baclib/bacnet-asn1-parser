@@ -1,0 +1,10 @@
+{
+    "alias": "integer32",
+    "name": "Integer32",
+    "base": 3,
+    "series": false,
+    "range": {
+        "minimum": "-2147483648",
+        "maximum": "2147483647"
+    }
+}
