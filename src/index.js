@@ -15,8 +15,10 @@ import { toAlias } from './to-alias.js';
  * type definitions. Each type is indexed in a Map by both its 'id' and 'name'
  * properties for efficient lookup during normalization.
  *
- * This enables the parser to recognize and use predefined BACnet types without
- * requiring them to be redefined in the ASN.1 content being parsed.
+ * This enables the parser to recognize and use predefined BACnet/BAClib types
+ * without requiring them to be redefined in the ASN.1 content being parsed.
+ *
+ * @type {Map<string|number, Object>}
  */
 const predefinedPath = new URL('../predefined/', import.meta.url);
 const predefinedFiles = await fs.readdir(predefinedPath);
@@ -26,9 +28,9 @@ for (const file of predefinedFiles) {
     if (file.endsWith('.json')) {
         const filePath = new URL(file, predefinedPath);
         const content = await fs.readFile(filePath, 'utf8');
-        const jsonData = JSON.parse(content);
-        predefinedTypes.set(jsonData.id, jsonData);
-        predefinedTypes.set(jsonData.name, jsonData);
+        const type = JSON.parse(content);
+        predefinedTypes.set(type.id, type);
+        predefinedTypes.set(type.name, type);
     }
 }
 
@@ -37,38 +39,33 @@ for (const file of predefinedFiles) {
 // ============================================================================
 
 /**
- * Custom error class for ASN.1 parsing errors.
+ * Custom error class for BACnet ASN.1 parsing errors.
  *
  * Extends the built-in Error class to provide additional context when an error
- * occurs during ASN.1 parsing. Automatically calculates the line number where
- * the error occurred for better debugging and error reporting.
+ * occurs during BACnet ASN.1 parsing. Automatically calculates the line number
+ * where the error occurred for better debugging and error reporting.
  *
  * @class ParserError
  * @extends {Error}
  * @param {string} message - The error message describing the parsing issue
- * @param {string} content - The ASN.1 content being parsed
+ * @param {string} content - The BACnet ASN.1 content being parsed
  * @param {number} index - The character index in the content where the error occurred
  *
  * @property {string} name - The name of the error class
- * @property {number} line - The line number in the content where the error occurred
+ * @property {number} line - The line number in the BACnet ASN.1 content where the error occurred
  */
 class ParserError extends Error {
     constructor(message, content, index) {
         super(message);
         this.name = this.constructor.name;
-        this.line = 1;
-
-        // Calculate the line number by counting newlines up to the error position
-        for (let i = 0; i < index; i++) {
-            if (content.charAt(i) === '\n') {
-                this.line++;
-            }
-        }
+        
+        // Calculate line number by counting newlines up to error position
+        this.line = 1 + content.slice(0, index).split('\n').length - 1;
     }
 }
 
 // ============================================================================
-// ASN.1 PARSER
+// BACnet ASN.1 PARSER
 // ============================================================================
 
 /**
@@ -117,19 +114,22 @@ function parse(content) {
      * Advances to the next parsable character by skipping whitespace and comments.
      *
      * ASN.1 comments start with -- and continue to the end of the line.
-     * This function also extracts comment text for potential use as documentation.
+     * Extracts comment text for potential use as documentation.
      *
      * @returns {boolean} True if more content remains to parse, false otherwise
      */
     function skipWhitespaceAndComments() {
         const originalLength = text.length;
-        const newText = text.replace(/^(\s|--.*)+/, '');
-        lastSkippedText = text
-            .substring(0, originalLength - newText.length)
+        text = text.replace(/^(\s|--.*)+/, '');
+        const skippedLength = originalLength - text.length;
+        
+        // Extract and normalize comment text
+        lastSkippedText = content
+            .substring(currentIndex, currentIndex + skippedLength)
             .replace(/--/g, '')
             .trim()
-            .replace(/(\n|\s)+/g, ' ');
-        text = newText;
+            .replace(/[\n\s]+/g, ' ');
+        
         currentIndex = content.length - text.length;
         return text.length > 0;
     }
@@ -145,17 +145,21 @@ function parse(content) {
      * @returns {*} Match result if successful, false/undefined otherwise
      */
     function tryMatch(pattern, transform) {
-        const isStringPattern = typeof pattern === 'string';
-        let match = isStringPattern ? text.startsWith(pattern) : text.match(pattern);
+        const isString = typeof pattern === 'string';
+        let match = isString ? text.startsWith(pattern) : text.match(pattern);
 
-        if (match) {
-            const matchLength = isStringPattern ? pattern.length : match[0].length;
-            text = text.substring(matchLength);
-            skipWhitespaceAndComments();
+        if (!match) {
+            return match;
+        }
 
-            if (transform) {
-                match = typeof transform === 'string' ? transform : transform(match);
-            }
+        // Consume matched text and skip following whitespace/comments
+        const matchLength = isString ? pattern.length : match[0].length;
+        text = text.substring(matchLength);
+        skipWhitespaceAndComments();
+
+        // Apply transform if provided
+        if (transform) {
+            match = typeof transform === 'string' ? transform : transform(match);
         }
 
         return match;
@@ -177,15 +181,15 @@ function parse(content) {
     }
 
     /**
-     * Parses a complete ASN.1 type definition.
+     * Parses a complete BACnet ASN.1 type definition.
      *
      * Format: TypeName ::= [APPLICATION tag] TypeExpression
-     * Type names must start with an uppercase letter and follow PascalCase with hyphens.
+     * Type names must start with uppercase and follow PascalCase with hyphens.
      *
      * @param {Object} definition - The definition object to populate
      */
     function parseDefinition(definition) {
-        // Parse type name (must start with uppercase, PascalCase with hyphens)
+        // Parse type name (PascalCase with optional hyphens)
         definition.name = requireMatch(/^([A-Z][0-9A-Za-z]*(?:-[A-Z][0-9A-Za-z]*)*)\s*::=/)[1];
 
         // Parse optional APPLICATION tag
@@ -211,11 +215,11 @@ function parse(content) {
             item.series = match[1] ? parseInt(match[1], 10) : true;
         });
 
-        // Determine base type
+        // Determine base type (built-in or user-defined)
         item.type = tryMatch('ABSTRACT-SYNTAX.&Type', 'Any')
             || tryMatch('ENUMERATED', 'Enumerated')
-            || tryMatch(/^BIT\s*STRING/, 'BitString')
-            || tryMatch(/^OCTET\s*STRING/, 'OctetString')
+            || tryMatch(/^BIT\s+STRING/, 'BitString')
+            || tryMatch(/^OCTET\s+STRING/, 'OctetString')
             || requireMatch(/^[A-Z][0-9A-Za-z]*(?:-[A-Z][0-9A-Za-z]*)*/)[0];
 
         // Parse SIZE constraint if present
@@ -246,22 +250,24 @@ function parse(content) {
         const rangePattern = /^\(\s*(MIN|[+-]?\d+(?:\.\d+)?)\s*(?:\.\.\s*(MAX|[+-]?\d+(?:\.\d+)?)\s*)?\)/;
         const match = isSize ? requireMatch(rangePattern) : tryMatch(rangePattern);
 
-        if (match) {
-            const minValue = match[1] === 'MIN' ? Number.NEGATIVE_INFINITY : parseFloat(match[1]);
-            const maxValue = match[2]
-                ? (match[2] === 'MAX' ? Number.POSITIVE_INFINITY : parseFloat(match[2]))
-                : minValue;
-
-            if (minValue > maxValue) {
-                throw new ParserError(
-                    `Invalid range: minimum (${minValue}) is greater than maximum (${maxValue})`,
-                    content,
-                    currentIndex
-                );
-            }
-
-            item[isSize ? 'size' : 'range'] = { min: minValue, max: maxValue };
+        if (!match) {
+            return;
         }
+
+        const minValue = match[1] === 'MIN' ? Number.NEGATIVE_INFINITY : parseFloat(match[1]);
+        const maxValue = match[2]
+            ? (match[2] === 'MAX' ? Number.POSITIVE_INFINITY : parseFloat(match[2]))
+            : minValue;
+
+        if (minValue > maxValue) {
+            throw new ParserError(
+                `Invalid range: minimum (${minValue}) is greater than maximum (${maxValue})`,
+                content,
+                currentIndex
+            );
+        }
+
+        item[isSize ? 'size' : 'range'] = { min: minValue, max: maxValue };
     }
 
     /**
@@ -294,14 +300,14 @@ function parse(content) {
         definition.items = [];
 
         while (skipWhitespaceAndComments()) {
-            // Parse item name (must start with lowercase, kebab-case)
+            // Parse item name (kebab-case, starts with lowercase)
             const itemName = requireMatch(/^[a-z][0-9a-z]*(?:-[0-9a-z]+)*/)[0];
             const item = { name: itemName };
 
             if (isSimpleType) {
                 // Simple types: name (number)
                 item.number = parseInt(requireMatch(/^\(\s*(\d+)\s*\)/)[1], 10);
-            } else if (isComplexType) {
+            } else {
                 // Complex types: name [tag] Type OPTIONAL
                 const tagMatch = tryMatch(/^\[(\d+)\]/);
                 if (tagMatch) {
@@ -316,7 +322,7 @@ function parse(content) {
             }
 
             // Preserve comments as documentation
-            if (lastSkippedText.length > 0) {
+            if (lastSkippedText) {
                 item.comment = lastSkippedText;
             }
 
@@ -324,7 +330,7 @@ function parse(content) {
 
             // Check for continuation or extensibility marker
             if (tryMatch(',')) {
-                if (lastSkippedText.length > 0) {
+                if (lastSkippedText) {
                     item.comment = lastSkippedText;
                 }
 
@@ -342,7 +348,7 @@ function parse(content) {
         requireMatch('}');
         
         // Preserve closing comment as definition documentation
-        if (lastSkippedText.length > 0) {
+        if (lastSkippedText) {
             definition.comment = lastSkippedText;
         }
     }
@@ -400,10 +406,10 @@ function getTypeReference(definition) {
  * @returns {Object} The enriched definition with alias, name, base, series, and traits
  */
 function enrichDefinition(definition, traits) {
-    const anonymous = !/^[A-Z]/.test(definition.name);
+    const isNamed = /^[A-Z]/.test(definition.name);
     return {
-        alias: anonymous ? null : toAlias(definition.name, definition.vendor),
-        name: anonymous ? null : definition.name,
+        alias: isNamed ? toAlias(definition.name, definition.vendor) : null,
+        name: isNamed ? definition.name : null,
         base: toAlias(definition.type),
         series: !!definition.series,
         ...traits
@@ -470,15 +476,12 @@ function normalizeString(definition) {
  * @returns {Object} Normalized definition with bits array or type reference
  */
 function normalizeBitString(definition) {
-    if (!definition.items || !definition.items.length) {
+    if (!definition.items?.length) {
         return getTypeReference(definition);
     }
 
     // Calculate minimum length based on highest bit index
-    const calculatedLength = definition.items.reduce(
-        (maximum, item) => item.number >= maximum ? item.number + 1 : maximum,
-        definition.items[0].number
-    );
+    const calculatedLength = Math.max(...definition.items.map(item => item.number)) + 1;
 
     const traits = {
         bits: definition.items.map(({ number, name }) => ({
@@ -490,7 +493,7 @@ function normalizeBitString(definition) {
         length: calculatedLength
     };
 
-    // Handle length and ranges of known BACnet bit string types
+    // Handle length and ranges for known BACnet bit string types
     switch (definition.name) {
         case 'BACnetAuditOperationFlags':
             traits.length = { minimum: calculatedLength, maximum: 64 };
@@ -532,19 +535,14 @@ function normalizeBitString(definition) {
  * @returns {Object} Normalized definition with items array or type reference
  */
 function normalizeEnumerated(definition) {
-    if (!definition.items || !definition.items.length) {
+    if (!definition.items?.length) {
         return getTypeReference(definition);
     }
 
     // Calculate range based on enumeration values
-    const minValue = definition.items.reduce(
-        (minimum, item) => item.number < minimum ? item.number : minimum,
-        definition.items[0].number
-    );
-    const maxValue = definition.items.reduce(
-        (maximum, item) => item.number >= maximum ? item.number + 1 : maximum,
-        definition.items[0].number
-    );
+    const numbers = definition.items.map(item => item.number);
+    const minValue = Math.min(...numbers);
+    const maxValue = Math.max(...numbers) + 1;
 
     const traits = {
         items: definition.items.map(({ name, number }) => ({
@@ -556,7 +554,7 @@ function normalizeEnumerated(definition) {
         range: { minimum: minValue, maximum: maxValue }
     };
 
-    // Handle constraints of known BACnet enumerated types
+    // Handle constraints for known BACnet enumerated types
     switch (definition.name) {
         case 'BACnetEngineeringUnits':
             traits.range.minimum = 0;
@@ -580,14 +578,14 @@ function normalizeEnumerated(definition) {
             break;
 
         default:
-            // Try to extract reserved/custom ranges from comment
-            if (!definition.extensible && typeof definition.comment === 'string') {
+            // Extract reserved/custom ranges from comment if available
+            if (!definition.extensible && definition.comment) {
                 const regex = /^Enumerated values (\d+)-(\d+) are reserved for definition by ASHRAE\. Enumerated values (\d+)-(\d+) may be used by others/;
                 const match = definition.comment.match(regex);
 
                 if (match) {
                     traits.range.minimum = parseInt(match[1], 10);
-                    traits.range.maximum = parseInt(match[4], 10);
+                    traits.range.maximum = parseInt(match[4], 10) + 1;
                     traits.ranges = [
                         {
                             custom: false,
@@ -597,7 +595,7 @@ function normalizeEnumerated(definition) {
                         {
                             custom: true,
                             from: parseInt(match[3], 10),
-                            to: traits.range.maximum
+                            to: parseInt(match[4], 10)
                         }
                     ];
                 }
@@ -696,12 +694,12 @@ function normalizeDefinition(definition) {
  * Normalizes a top-level BACnet/BAClib ASN.1 definition, checking for predefined types first.
  *
  * This is the main normalization function for processing parsed definitions.
- * It first checks if the definition matches a predefined type (loaded from JSON files).
- * If found, the predefined version is returned; otherwise, the definition is
- * normalized using the standard normalization process.
+ * Checks if the definition matches a predefined type (loaded from JSON files).
+ * If found, returns the predefined version; otherwise, normalizes using the
+ * standard normalization process.
  *
  * This two-tier approach allows predefined types to override parsed definitions,
- * ensuring consistency with the BACnet standard library types.
+ * ensuring consistency with BACnet standard library types.
  *
  * @param {Object} definition - The parsed, top-level BACnet/BAClib ASN.1 definition
  * @returns {Object} The predefined type or normalized definition
