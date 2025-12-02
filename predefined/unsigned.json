@@ -2,7 +2,9 @@
     "alias": "unsigned",
     "name": "Unsigned",
     "base": 2,
-    "vendor": 0,
-    "minimum": "0",
-    "maximum": "MAX"
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "MAX"
+    }
 }

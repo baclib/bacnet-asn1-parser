@@ -1,8 +1,0 @@
-{
-    "alias": "unsigned-64",
-    "name": "Unsigned64",
-    "base": 2,
-    "vendor": 0,
-    "minimum": "0",
-    "maximum": "18446744073709551615"
-}

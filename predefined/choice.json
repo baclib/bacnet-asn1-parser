@@ -2,7 +2,5 @@
     "alias": "choice",
     "name": "CHOICE",
     "base": 17,
-    "vendor": 0,
-    "minimum": null,
-    "maximum": null
+    "series": false
 }

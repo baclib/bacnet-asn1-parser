@@ -1,8 +1,0 @@
-{
-    "alias": "unsigned-16",
-    "name": "Unsigned16",
-    "base": 2,
-    "vendor": 0,
-    "minimum": "0",
-    "maximum": "65535"
-}

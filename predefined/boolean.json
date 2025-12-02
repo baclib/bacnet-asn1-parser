@@ -2,7 +2,5 @@
     "alias": "boolean",
     "name": "Boolean",
     "base": 1,
-    "vendor": 0,
-    "minimum": null,
-    "maximum": null
+    "series": false
 }

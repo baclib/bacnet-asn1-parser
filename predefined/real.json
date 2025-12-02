@@ -2,7 +2,9 @@
     "alias": "real",
     "name": "Real",
     "base": 4,
-    "vendor": 0,
-    "minimum": "-3.4028235E+38",
-    "maximum": "3.4028235E+38"
+    "series": false,
+    "range": {
+        "minimum": "-3.4028235E+38",
+        "maximum": "3.4028235E+38"
+    }
 }

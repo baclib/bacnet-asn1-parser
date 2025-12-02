@@ -2,7 +2,5 @@
     "alias": "sequence",
     "name": "SEQUENCE",
     "base": 18,
-    "vendor": 0,
-    "minimum": null,
-    "maximum": null
+    "series": false
 }

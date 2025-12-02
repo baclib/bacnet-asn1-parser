@@ -2,7 +2,5 @@
     "alias": "octet-string",
     "name": "OctetString",
     "base": 6,
-    "vendor": 0,
-    "minimum": null,
-    "maximum": null
+    "series": false
 }

@@ -2,7 +2,5 @@
     "alias": "character-string",
     "name": "CharacterString",
     "base": 7,
-    "vendor": 0,
-    "minimum": null,
-    "maximum": null
+    "series": false
 }

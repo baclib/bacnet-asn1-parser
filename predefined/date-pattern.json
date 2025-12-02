@@ -2,7 +2,5 @@
     "alias": "date-pattern",
     "name": "DatePattern",
     "base": 11,
-    "vendor": 0,
-    "minimum": null,
-    "maximum": null
+    "series": false
 }

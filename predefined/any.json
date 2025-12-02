@@ -2,7 +2,5 @@
     "alias": "any",
     "name": "ANY",
     "base": 16,
-    "vendor": 0,
-    "minimum": null,
-    "maximum": null
+    "series": false
 }

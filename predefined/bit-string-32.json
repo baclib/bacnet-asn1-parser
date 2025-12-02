@@ -1,8 +1,0 @@
-{
-    "alias": "bit-string-32",
-    "name": "BitString32",
-    "base": 8,
-    "vendor": 0,
-    "minimum": "0",
-    "maximum": "31"
-}

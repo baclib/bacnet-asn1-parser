@@ -2,7 +2,9 @@
     "alias": "bit-string",
     "name": "BitString",
     "base": 8,
-    "vendor": 0,
-    "minimum": "0",
-    "maximum": "MAX"
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "MAX"
+    }
 }
