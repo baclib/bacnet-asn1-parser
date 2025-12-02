@@ -1,5 +1,5 @@
 {
-    "id": "time-pattern",
+    "alias": "time-pattern",
     "name": "TimePattern",
     "base": 11,
     "vendor": 0,

@@ -1,5 +1,5 @@
 {
-    "id": "bit-string-64",
+    "alias": "bit-string-64",
     "name": "BitString64",
     "base": 8,
     "vendor": 0,

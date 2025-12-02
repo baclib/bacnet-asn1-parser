@@ -1,5 +1,5 @@
 {
-    "id": "enumerated-32",
+    "alias": "enumerated-32",
     "name": "Enumerated32",
     "base": 9,
     "vendor": 0,

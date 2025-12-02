@@ -1,5 +1,5 @@
 {
-    "id": "integer-16",
+    "alias": "integer-16",
     "name": "Integer16",
     "base": 3,
     "vendor": 0,

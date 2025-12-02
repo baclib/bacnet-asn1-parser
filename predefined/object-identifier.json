@@ -1,5 +1,5 @@
 {
-    "id": "object-identifier",
+    "alias": "object-identifier",
     "name": "BACnetObjectIdentifier",
     "base": 12,
     "vendor": 0,

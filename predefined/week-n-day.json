@@ -1,5 +1,5 @@
 {
-    "id": "week-n-day",
+    "alias": "week-n-day",
     "name": "BACnetWeekNDay",
     "base": 19,
     "vendor": 0,

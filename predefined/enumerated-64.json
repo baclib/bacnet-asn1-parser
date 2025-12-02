@@ -1,5 +1,5 @@
 {
-    "id": "enumerated-64",
+    "alias": "enumerated-64",
     "name": "Enumerated64",
     "base": 9,
     "vendor": 0,

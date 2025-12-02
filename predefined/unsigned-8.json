@@ -1,5 +1,5 @@
 {
-    "id": "unsigned-8",
+    "alias": "unsigned-8",
     "name": "Unsigned8",
     "base": 2,
     "vendor": 0,

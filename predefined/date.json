@@ -1,5 +1,5 @@
 {
-    "id": "date",
+    "alias": "date",
     "name": "Date",
     "base": 10,
     "vendor": 0,

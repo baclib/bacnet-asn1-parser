@@ -1,5 +1,5 @@
 {
-    "id": "integer-64",
+    "alias": "integer-64",
     "name": "Integer64",
     "base": 3,
     "vendor": 0,

@@ -1,5 +1,5 @@
 {
-    "id": "date-pattern",
+    "alias": "date-pattern",
     "name": "DatePattern",
     "base": 11,
     "vendor": 0,

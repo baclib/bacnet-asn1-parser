@@ -1,5 +1,5 @@
 {
-    "id": "octet-string",
+    "alias": "octet-string",
     "name": "OctetString",
     "base": 6,
     "vendor": 0,

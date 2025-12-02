@@ -1,5 +1,5 @@
 {
-    "id": "character-string",
+    "alias": "character-string",
     "name": "CharacterString",
     "base": 7,
     "vendor": 0,

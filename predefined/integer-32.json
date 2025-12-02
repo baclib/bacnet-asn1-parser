@@ -1,5 +1,5 @@
 {
-    "id": "integer-32",
+    "alias": "integer-32",
     "name": "Integer32",
     "base": 3,
     "vendor": 0,

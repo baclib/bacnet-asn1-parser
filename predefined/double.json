@@ -1,5 +1,5 @@
 {
-    "id": "double",
+    "alias": "double",
     "name": "Double",
     "base": 5,
     "vendor": 0,
