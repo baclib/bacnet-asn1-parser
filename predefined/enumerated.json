@@ -1,0 +1,10 @@
+{
+    "alias": "enumerated",
+    "name": "Enumerated",
+    "base": 9,
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "MAX"
+    }
+}

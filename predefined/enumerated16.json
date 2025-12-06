@@ -1,0 +1,10 @@
+{
+    "alias": "enumerated16",
+    "name": "Enumerated16",
+    "base": 9,
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "65535"
+    }
+}

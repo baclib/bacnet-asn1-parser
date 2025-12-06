@@ -1,0 +1,10 @@
+{
+    "alias": "integer",
+    "name": "Integer",
+    "base": 3,
+    "series": false,
+    "range": {
+        "minimum": "MIN",
+        "maximum": "MAX"
+    }
+}

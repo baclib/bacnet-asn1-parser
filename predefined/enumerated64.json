@@ -1,0 +1,10 @@
+{
+    "alias": "enumerated64",
+    "name": "Enumerated64",
+    "base": 9,
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "18446744073709551615"
+    }
+}

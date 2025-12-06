@@ -1,0 +1,6 @@
+{
+    "alias": "week-n-day",
+    "name": "BACnetWeekNDay",
+    "base": 19,
+    "series": false
+}

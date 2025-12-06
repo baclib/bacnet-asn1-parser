@@ -1,0 +1,10 @@
+{
+    "alias": "integer8",
+    "name": "Integer8",
+    "base": 3,
+    "series": false,
+    "range": {
+        "minimum": "-128",
+        "maximum": "127"
+    }
+}

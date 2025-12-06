@@ -1,0 +1,10 @@
+{
+    "alias": "bit-string16",
+    "name": "BitString16",
+    "base": 8,
+    "series": false,
+    "range": {
+        "minimum": "0",
+        "maximum": "15"
+    }
+}

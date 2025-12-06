@@ -1,0 +1,6 @@
+{
+    "alias": "octet-string",
+    "name": "OctetString",
+    "base": 6,
+    "series": false
+}
