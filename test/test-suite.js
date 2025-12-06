@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2024-2025, The BAClib Initiative and Contributors
+// SPDX-License-Identifier: EPL-2.0
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

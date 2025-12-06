@@ -418,5 +418,6 @@ FodyWeavers.xsd
 *.msp
 
 # User specific files
-tests/test-report.html
-tests/valid-data/standard-data.asn1
+/local-working-files/
+test/test-report.html
+test/valid-data/standard-data.asn1
