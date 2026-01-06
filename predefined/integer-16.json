@@ -1,0 +1,7 @@
+{
+    "alias": "Integer16",
+    "name": "integer-16",
+    "type": "integer",
+    "minimum": -32768,
+    "maximum": 32767
+}

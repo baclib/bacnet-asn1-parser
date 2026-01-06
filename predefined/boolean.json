@@ -1,6 +1,5 @@
 {
-    "alias": "boolean",
-    "name": "Boolean",
-    "base": 1,
-    "series": false
+    "alias": "Boolean",
+    "name": "boolean",
+    "primitive": 1
 }

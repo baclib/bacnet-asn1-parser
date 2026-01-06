@@ -1,6 +1,5 @@
 {
-    "alias": "date-pattern",
-    "name": "DatePattern",
-    "base": 11,
-    "series": false
+    "alias": "DatePattern",
+    "name": "date-pattern",
+    "primitive": 10
 }

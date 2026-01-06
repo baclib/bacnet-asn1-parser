@@ -1,10 +1,9 @@
 {
-    "alias": "bit-string",
-    "name": "BitString",
-    "base": 8,
-    "series": false,
-    "range": {
-        "minimum": "0",
-        "maximum": "MAX"
+    "alias": "BitString",
+    "name": "bit-string",
+    "primitive": 8,
+    "length": {
+        "minimum": 0,
+        "maximum": 4294967295
     }
 }

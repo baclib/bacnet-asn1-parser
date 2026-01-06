@@ -1,10 +1,7 @@
 {
-    "alias": "integer",
-    "name": "Integer",
-    "base": 3,
-    "series": false,
-    "range": {
-        "minimum": "MIN",
-        "maximum": "MAX"
-    }
+    "alias": "Integer",
+    "name": "integer",
+    "primitive": 3,
+    "minimum": "MIN",
+    "maximum": "MAX"
 }

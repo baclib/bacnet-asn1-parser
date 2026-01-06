@@ -1,10 +1,7 @@
 {
-    "alias": "real",
-    "name": "Real",
-    "base": 4,
-    "series": false,
-    "range": {
-        "minimum": "-3.4028235E+38",
-        "maximum": "3.4028235E+38"
-    }
+    "alias": "Real",
+    "name": "real",
+    "primitive": 4,
+    "minimum": -3.4028234663852886e+38,
+    "maximum": 3.4028234663852886e+38
 }

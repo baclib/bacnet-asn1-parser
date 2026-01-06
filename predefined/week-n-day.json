@@ -1,6 +1,6 @@
 {
-    "alias": "week-n-day",
-    "name": "BACnetWeekNDay",
-    "base": 19,
-    "series": false
+    "alias": "BACnetWeekNDay",
+    "name": "week-n-day",
+    "type": "octet-string",
+    "length": 3
 }

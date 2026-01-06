@@ -1,6 +1,5 @@
 {
-    "alias": "null",
-    "name": "Null",
-    "base": 0,
-    "series": false
+    "alias": "Null",
+    "name": "null",
+    "primitive": 0
 }

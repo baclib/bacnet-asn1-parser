@@ -1,6 +1,5 @@
 {
-    "alias": "date",
-    "name": "Date",
-    "base": 10,
-    "series": false
+    "alias": "Date",
+    "name": "date",
+    "type": "date-pattern"
 }

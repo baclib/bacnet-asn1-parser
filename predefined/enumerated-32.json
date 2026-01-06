@@ -1,0 +1,7 @@
+{
+    "alias": "Enumerated32",
+    "name": "enumerated-32",
+    "type": "enumerated",
+    "minimum": 0,
+    "maximum": 4294967295
+}

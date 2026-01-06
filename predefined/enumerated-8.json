@@ -1,0 +1,7 @@
+{
+    "alias": "Enumerated8",
+    "name": "enumerated-8",
+    "type": "enumerated",
+    "minimum": 0,
+    "maximum": 255
+}

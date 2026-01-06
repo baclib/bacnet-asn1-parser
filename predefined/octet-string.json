@@ -1,6 +1,9 @@
 {
-    "alias": "octet-string",
-    "name": "OctetString",
-    "base": 6,
-    "series": false
+    "alias": "OctetString",
+    "name": "octet-string",
+    "primitive": 6,
+    "length": {
+        "minimum": 0,
+        "maximum": 4294967295
+    }
 }

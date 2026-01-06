@@ -1,6 +1,5 @@
 {
-    "alias": "sequence",
-    "name": "SEQUENCE",
-    "base": 18,
-    "series": false
+    "alias": "SEQUENCE",
+    "name": "sequence",
+    "primitive": 18
 }

@@ -1,6 +1,5 @@
 {
-    "alias": "time-pattern",
-    "name": "TimePattern",
-    "base": 11,
-    "series": false
+    "alias": "TimePattern",
+    "name": "time-pattern",
+    "primitive": 11
 }

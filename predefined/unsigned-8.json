@@ -1,0 +1,7 @@
+{
+    "alias": "Unsigned8",
+    "name": "unsigned-8",
+    "type": "unsigned",
+    "minimum": 0,
+    "maximum": 255
+}

@@ -1,6 +1,5 @@
 {
-    "alias": "any",
-    "name": "ANY",
-    "base": 16,
-    "series": false
+    "alias": "ANY",
+    "name": "any",
+    "primitive": 16
 }

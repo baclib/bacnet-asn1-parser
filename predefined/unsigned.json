@@ -1,10 +1,7 @@
 {
-    "alias": "unsigned",
-    "name": "Unsigned",
-    "base": 2,
-    "series": false,
-    "range": {
-        "minimum": "0",
-        "maximum": "MAX"
-    }
+    "alias": "Unsigned",
+    "name": "unsigned",
+    "primitive": 1,
+    "minimum": 0,
+    "maximum": "MAX"
 }

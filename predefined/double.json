@@ -1,10 +1,7 @@
 {
-    "alias": "double",
-    "name": "Double",
-    "base": 5,
-    "series": false,
-    "range": {
-        "minimum": "-1.7976931348623157E+308",
-        "maximum": "1.7976931348623157E+308"
-    }
+    "alias": "Double",
+    "name": "double",
+    "primitive": 5,
+    "minimum": -1.7976931348623157e+308,
+    "maximum": 1.7976931348623157e+308
 }

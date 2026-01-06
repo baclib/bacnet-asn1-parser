@@ -1,0 +1,9 @@
+{
+    "alias": "BitString8",
+    "name": "bit-string-8",
+    "type": "bit-string",
+    "length": {
+        "minimum": 0,
+        "maximum": 8
+    }
+}
