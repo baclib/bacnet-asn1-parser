@@ -1,0 +1,9 @@
+-- Comprehensive test of parser features
+-- Tests: comments, extensibility, ranges, APPLICATION tags
+
+BACnetPropertyIdentifier ::= [APPLICATION 20] ENUMERATED {
+    acked-transitions (0),      -- Acknowledged transitions
+    action (2),                  -- Action to perform  
+    all (8),                     -- All properties
+    ...
+} -- Enumerated values 0-511 are reserved for definition by ASHRAE. Enumerated values 512-4194303 may be used by others

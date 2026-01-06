@@ -1,6 +1,6 @@
 BAClibStatusFlags ::= BIT STRING {
-    in-alarm (0),
-    fault (1),
-    overridden (2),
-    out-of-service (3)
-}
+    in-alarm (0),           -- Object is in alarm state
+    fault (1),              -- Object has detected a fault
+    overridden (2),         -- Object value is overridden
+    out-of-service (3)      -- Object is out of service
+} -- Standard BACnet status flags

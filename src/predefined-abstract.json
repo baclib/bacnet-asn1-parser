@@ -1,4 +1,6 @@
 {
+    "$comment": "Predefined BACnet/BAClib Type Definitions - Abstract Specification",
+    "description": "This file defines abstract specifications for predefined BACnet/BAClib primitive types. These definitions are processed by generate-predefined.js to create normalized type definition JSON files. Each definition specifies: (1) name - The type name in PascalCase, (2) primitive - Optional BACnet application tag number (0-18), (3) type - Optional reference to a base type, (4) minimum/maximum - Optional value range constraints, (5) length - Optional maximum length for strings/bit strings, (6) size - Optional fixed size for octet strings. The generate-predefined.js script transforms these abstract definitions into normalized formats with kebab-case names, proper alias handling, and BAClib-compliant structure.",
     "definitions": [
         {
             "name": "Null",

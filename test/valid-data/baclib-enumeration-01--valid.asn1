@@ -1,5 +1,5 @@
 BAClibEnumeration01 ::= ENUMERATED {
-    off (0),
-    on (1),
-    auto (2)
+    off (0),        -- System is turned off
+    on (1),         -- System is running
+    auto (2)        -- System in automatic mode
 }

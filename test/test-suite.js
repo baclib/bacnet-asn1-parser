@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: Copyright 2024-2025, The BAClib Initiative and Contributors
+// SPDX-FileCopyrightText: Copyright 2024-2026, The BAClib Initiative and Contributors
 // SPDX-License-Identifier: EPL-2.0
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { parse, ParserError } from '../src/index.js';
+import { parse, normalize, ParserError } from '../src/index.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -71,6 +71,7 @@ function parseFile(filePath, shouldSucceed) {
         success: false,
         error: null,
         parsedData: null,
+        normalizedData: null,
         executionTime: 0
     };
 
@@ -79,6 +80,10 @@ function parseFile(filePath, shouldSucceed) {
     try {
         const parsed = parse(content);
         result.parsedData = parsed;
+        
+        // Normalize the parsed data
+        result.normalizedData = parsed.map(def => normalize(def));
+        
         result.success = true;
         result.executionTime = Date.now() - startTime;
         
@@ -102,6 +107,12 @@ function parseFile(filePath, shouldSucceed) {
                 if (def.size) {
                     console.log(`    Size: (${def.size.min}..${def.size.max})`);
                 }
+                if (def.extensible) {
+                    console.log(`    Extensible: Yes (...)`);
+                }
+                if (def.comment) {
+                    console.log(`    Comment: "${def.comment}"`);
+                }
                 if (def.items && def.items.length > 0) {
                     console.log(`    Items: ${def.items.length}`);
                     def.items.forEach(item => {
@@ -109,11 +120,28 @@ function parseFile(filePath, shouldSucceed) {
                         if (item.number !== undefined) itemStr += ` [${item.number}]`;
                         if (item.type) itemStr += `: ${item.type}`;
                         if (item.optional) itemStr += ' (OPTIONAL)';
+                        if (item.comment) itemStr += ` -- ${item.comment}`;
                         console.log(itemStr);
                     });
                 }
-                if (def.customizable) {
-                    console.log(`    Extensible: Yes (...)`);
+                
+                // Show normalized version
+                const normalized = result.normalizedData[index];
+                console.log(`\n    Normalized:`);
+                console.log(`      Name: ${normalized.name || normalized.alias}`);
+                if (normalized.alias && normalized.name) {
+                    console.log(`      Alias: ${normalized.alias}`);
+                }
+                if (typeof normalized.type === 'string') {
+                    console.log(`      Type: ${normalized.type}`);
+                } else if (normalized.type?.base) {
+                    console.log(`      Base Type: ${normalized.type.base}`);
+                    if (normalized.type.minimum !== undefined || normalized.type.maximum !== undefined) {
+                        console.log(`      Range: ${normalized.type.minimum ?? '-∞'} to ${normalized.type.maximum ?? '∞'}`);
+                    }
+                    if (normalized.type.proprietary) {
+                        console.log(`      Proprietary: ${JSON.stringify(normalized.type.proprietary)}`);
+                    }
                 }
             });
             
@@ -492,7 +520,8 @@ function generateHtmlReport() {
                                     ${def.series !== undefined ? `<div class="definition-prop"><span class="key">Series:</span> ${def.series === true ? 'SEQUENCE OF' : `SEQUENCE SIZE (${def.series}) OF`}</div>` : ''}
                                     ${def.range ? `<div class="definition-prop"><span class="key">Range:</span> (${def.range.min}..${def.range.max})</div>` : ''}
                                     ${def.size ? `<div class="definition-prop"><span class="key">Size:</span> (${def.size.min}..${def.size.max})</div>` : ''}
-                                    ${def.customizable ? `<div class="definition-prop"><span class="key">Extensible:</span> Yes (...)</div>` : ''}
+                                    ${def.extensible ? `<div class="definition-prop"><span class="key">Extensible:</span> Yes (...)</div>` : ''}
+                                    ${def.comment ? `<div class="definition-prop"><span class="key">Comment:</span> "${escapeHtml(def.comment)}"</div>` : ''}
                                     ${def.items && def.items.length > 0 ? `
                                         <div class="definition-prop">
                                             <span class="key">Items (${def.items.length}):</span>
@@ -503,11 +532,43 @@ function generateHtmlReport() {
                                                         ${item.number !== undefined ? `[${item.number}]` : ''}
                                                         ${item.type ? `: ${item.type}` : ''}
                                                         ${item.optional ? ' <em>(OPTIONAL)</em>' : ''}
+                                                        ${item.comment ? `<br><span style="color: #666; font-size: 0.85em;">-- ${escapeHtml(item.comment)}</span>` : ''}
                                                     </div>
                                                 `).join('')}
                                             </div>
                                         </div>
                                     ` : ''}
+                                    ${result.normalizedData && result.normalizedData[idx] ? (() => {
+                                        const normalized = result.normalizedData[idx];
+                                        return `
+                                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd;">
+                                            <div class="definition-prop"><strong style="color: #2196F3;">Normalized Form:</strong></div>
+                                            <div class="definition-prop"><span class="key">Name:</span> ${normalized.name || normalized.alias}</div>
+                                            ${normalized.alias && normalized.name ? `<div class="definition-prop"><span class="key">Alias:</span> ${normalized.alias}</div>` : ''}
+                                            ${typeof normalized.type === 'string' ? `
+                                                <div class="definition-prop"><span class="key">Type:</span> ${normalized.type}</div>
+                                            ` : ''}
+                                            ${typeof normalized.type === 'object' && normalized.type.base ? `
+                                                <div class="definition-prop"><span class="key">Base Type:</span> ${normalized.type.base}</div>
+                                                ${normalized.type.minimum !== undefined || normalized.type.maximum !== undefined ? `
+                                                    <div class="definition-prop"><span class="key">Range:</span> ${normalized.type.minimum ?? '-∞'} to ${normalized.type.maximum ?? '∞'}</div>
+                                                ` : ''}
+                                                ${normalized.type.proprietary ? `
+                                                    <div class="definition-prop"><span class="key">Proprietary:</span> ${JSON.stringify(normalized.type.proprietary)}</div>
+                                                ` : ''}
+                                                ${normalized.type.values ? `
+                                                    <div class="definition-prop"><span class="key">Values:</span> ${normalized.type.values.length} enumerated values</div>
+                                                ` : ''}
+                                                ${normalized.type.options ? `
+                                                    <div class="definition-prop"><span class="key">Options:</span> ${normalized.type.options.length} choice options</div>
+                                                ` : ''}
+                                                ${normalized.type.fields ? `
+                                                    <div class="definition-prop"><span class="key">Fields:</span> ${normalized.type.fields.length} sequence fields</div>
+                                                ` : ''}
+                                            ` : ''}
+                                        </div>
+                                        `;
+                                    })() : ''}
                                 </div>
                             `).join('')}
                         </div>

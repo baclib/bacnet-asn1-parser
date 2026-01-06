@@ -1,4 +1,4 @@
 BAClibObjectIdentifier ::= SEQUENCE {
-    object-type BAClibObjectType,
-    instance-number INTEGER
-}
+    object-type BAClibObjectType,           -- Type of BACnet object
+    instance-number INTEGER                 -- Unique instance within type
+} -- BACnet object identifier structure

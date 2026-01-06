@@ -1,0 +1,7 @@
+-- Test complex SEQUENCE with optional fields and comments
+
+BACnetReadAccessResult ::= SEQUENCE {
+    object-identifier [0] BACnetObjectIdentifier,        -- Object being read
+    list-of-results [1] SEQUENCE OF BACnetResult,        -- Results list
+    error-code [2] BACnetErrorCode OPTIONAL              -- Error if any
+} -- Result structure for read operations

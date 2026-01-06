@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: Copyright 2024-2025, The BAClib Initiative and Contributors
+// SPDX-FileCopyrightText: Copyright 2024-2026, The BAClib Initiative and Contributors
 // SPDX-License-Identifier: EPL-2.0
 
 import fs from 'node:fs/promises';
-import { toAlias } from './to-alias.js';
+import { toBaclibName } from './to-baclib-name.js';
 
 // ============================================================================
 // PREDEFINED TYPES LOADER
@@ -12,8 +12,8 @@ import { toAlias } from './to-alias.js';
  * Loads all predefined BACnet/BAClib type definitions from JSON files.
  *
  * Scans the '../predefined' directory and loads each JSON file containing
- * type definitions. Each type is indexed in a Map by both its 'id' and 'name'
- * properties for efficient lookup during normalization.
+ * type definitions. Each type is indexed in a Map by both its 'alias' and
+ * 'name' properties for efficient lookup during normalization.
  *
  * This enables the parser to recognize and use predefined BACnet/BAClib types
  * without requiring them to be redefined in the ASN.1 content being parsed.
@@ -29,7 +29,7 @@ for (const file of predefinedFiles) {
         const filePath = new URL(file, predefinedPath);
         const content = await fs.readFile(filePath, 'utf8');
         const type = JSON.parse(content);
-        predefinedTypes.set(type.id, type);
+        predefinedTypes.set(type.alias, type);
         predefinedTypes.set(type.name, type);
     }
 }
@@ -58,7 +58,7 @@ class ParserError extends Error {
     constructor(message, content, index) {
         super(message);
         this.name = this.constructor.name;
-        
+
         // Calculate line number by counting newlines up to error position
         this.line = 1 + content.slice(0, index).split('\n').length - 1;
     }
@@ -91,6 +91,7 @@ class ParserError extends Error {
  * @throws {ParserError} If invalid characters are found or syntax errors are detected
  */
 function parse(content) {
+
     // Validate input type
     if (typeof content !== 'string') {
         throw new TypeError(`Expected string, got ${typeof content}`);
@@ -108,8 +109,8 @@ function parse(content) {
 
     // Track current position in original content for error reporting
     let currentIndex = 0;
-    let lastSkippedText = '';
-
+    let lastComment = '';
+    
     /**
      * Advances to the next parsable character by skipping whitespace and comments.
      *
@@ -119,30 +120,47 @@ function parse(content) {
      * @returns {boolean} True if more content remains to parse, false otherwise
      */
     function skipWhitespaceAndComments() {
-        const originalLength = text.length;
-        text = text.replace(/^(\s|--.*)+/, '');
-        const skippedLength = originalLength - text.length;
-        
-        // Extract and normalize comment text
-        lastSkippedText = content
-            .substring(currentIndex, currentIndex + skippedLength)
-            .replace(/--/g, '')
-            .trim()
-            .replace(/[\n\s]+/g, ' ');
-        
+        lastComment = '';
+        text = text.replace(/^(\s|--.*)+/, match => {
+            lastComment = match.replace(/--/g, '').replace(/[\t ]+/g, ' ').trim();
+            return '';
+        });
         currentIndex = content.length - text.length;
         return text.length > 0;
     }
 
     /**
-     * Attempts to match a pattern at the current position.
+     * Attempts to match a pattern at the current position in the text.
      *
-     * If successful, consumes the matched text and advances to the next token.
-     * Optionally transforms the match result using a provided function or string.
+     * This is the core matching function used throughout the parser. It handles both
+     * string literals and regular expressions, automatically consuming matched text
+     * and advancing past any following whitespace or comments.
      *
-     * @param {string|RegExp} pattern - The pattern to match (string literal or regex)
+     * When a match is successful:
+     * 1. The matched text is consumed from the input
+     * 2. Following whitespace/comments are skipped
+     * 3. An optional transform is applied to the match result
+     * 4. The (possibly transformed) match is returned
+     *
+     * @param {string|RegExp} pattern - The pattern to match
+     *        - String: Checks if text starts with this exact string
+     *        - RegExp: Must be anchored with ^ to match from start of text
      * @param {string|Function} [transform] - Optional transform for the matched value
-     * @returns {*} Match result if successful, false/undefined otherwise
+     *        - String: Replace match with this literal value
+     *        - Function: Called with match object, returns transformed value
+     * @returns {*} The match result (possibly transformed) if successful, false/undefined if no match
+     *
+     * @example
+     * // Match literal string
+     * tryMatch('SEQUENCE')  // Returns true if text starts with 'SEQUENCE'
+     *
+     * @example
+     * // Match regex and transform to constant
+     * tryMatch(/^BIT\s+STRING/, 'BitString')  // Returns 'BitString' if matched
+     *
+     * @example
+     * // Match regex and extract capture group
+     * tryMatch(/^\[APPLICATION\s+(\d+)\]/, match => parseInt(match[1], 10))
      */
     function tryMatch(pattern, transform) {
         const isString = typeof pattern === 'string';
@@ -157,7 +175,7 @@ function parse(content) {
         text = text.substring(matchLength);
         skipWhitespaceAndComments();
 
-        // Apply transform if provided
+        // Apply transform if provided (either replace with string or call function)
         if (transform) {
             match = typeof transform === 'string' ? transform : transform(match);
         }
@@ -168,9 +186,17 @@ function parse(content) {
     /**
      * Matches a required pattern or throws a ParserError if not found.
      *
+     * This is a strict version of tryMatch() that enforces that a pattern MUST match
+     * at the current position. Use this for syntax elements that are mandatory according
+     * to the ASN.1 grammar (e.g., type names, closing braces, required parentheses).
+     *
      * @param {string|RegExp} pattern - The pattern that must match
-     * @returns {*} The match result
-     * @throws {ParserError} If the pattern does not match
+     * @returns {*} The match result (never returns false/undefined)
+     * @throws {ParserError} If the pattern does not match, includes line number for debugging
+     *
+     * @example
+     * // Require a type name (will throw if not found)
+     * const typeName = requireMatch('}');
      */
     function requireMatch(pattern) {
         const match = tryMatch(pattern);
@@ -189,6 +215,7 @@ function parse(content) {
      * @param {Object} definition - The definition object to populate
      */
     function parseDefinition(definition) {
+
         // Parse type name (PascalCase with optional hyphens)
         definition.name = requireMatch(/^([A-Z][0-9A-Za-z]*(?:-[A-Z][0-9A-Za-z]*)*)\s*::=/)[1];
 
@@ -210,6 +237,7 @@ function parse(content) {
      * @param {Object} item - The item object to populate with type information
      */
     function parseType(item) {
+
         // Check for SEQUENCE OF or SEQUENCE SIZE(n) OF
         tryMatch(/^SEQUENCE\s*(?:SIZE\s*\(\s*(\d+)\s*\)\s*)?OF/, match => {
             item.series = match[1] ? parseInt(match[1], 10) : true;
@@ -322,17 +350,18 @@ function parse(content) {
             }
 
             // Preserve comments as documentation
-            if (lastSkippedText) {
-                item.comment = lastSkippedText;
+            // Comment text comes from the last skipWhitespaceAndComments() call,
+            // which captured any "-- comment" text after the item's definition
+            if (lastComment) {
+                item.comment = lastComment;
             }
 
             definition.items.push(item);
 
-            // Check for continuation or extensibility marker
+            // Check for continuation (comma) or extensibility marker ("...")
             if (tryMatch(',')) {
-                if (lastSkippedText) {
-                    item.comment = lastSkippedText;
-                }
+                // After comma is consumed, any new comment belongs to the NEXT item,
+                // so don't reassign it to the current item here
 
                 // Extensibility marker (...) allowed for all types except SEQUENCE
                 if (definition.type !== 'SEQUENCE' && tryMatch('...')) {
@@ -346,10 +375,10 @@ function parse(content) {
         }
 
         requireMatch('}');
-        
+
         // Preserve closing comment as definition documentation
-        if (lastSkippedText) {
-            definition.comment = lastSkippedText;
+        if (lastComment) {
+            definition.comment = lastComment;
         }
     }
 
@@ -369,289 +398,35 @@ function parse(content) {
 // ============================================================================
 
 /**
- * Validates and returns a context tag number if valid, otherwise null.
+ * Normalizes an item's name into BAClib format, handling alias creation when needed.
  *
- * Context tags in BACnet ASN.1 are used to distinguish alternatives in CHOICE
- * types and to tag fields in SEQUENCE types. Valid range is [0, 254].
+ * This function converts ASN.1 names (PascalCase or kebab-case) into standardized
+ * BAClib names (kebab-case). If the conversion results in a different name, both
+ * the original (as `alias`) and converted (as `name`) are preserved.
  *
- * @param {*} value - The value to validate as a context number
- * @returns {number|null} The validated context number or null if invalid
+ * Name Conversion Examples:
+ * - "BACnetPropertyReference" → { alias: "BACnetPropertyReference", name: "property-reference" }
+ * - "unsigned-8" → { name: "unsigned-8" } (no alias needed, already in kebab-case)
+ * - "Unsigned16" → { alias: "Unsigned16", name: "unsigned-16" }
+ *
+ * @param {Object} definition - The definition object containing at minimum a `name` property
+ * @param {string} definition.name - The original ASN.1 name to normalize
+ * @param {boolean|string|number} [prefix] - Controls "BACnet" prefix handling (see toBaclibName)
+ *        - false: Remove "BACnet" prefix (used for top-level types)
+ *        - undefined: Keep "BACnet" as "bacnet" (used for nested items)
+ * @returns {Object} Normalized item with `name` and optionally `alias`
+ *        - { name: string }: When conversion doesn't change the name
+ *        - { alias: string, name: string }: When conversion produces a different name
+ * @throws {Error} If definition doesn't have a valid name string
  */
-function getContextNumber(value) {
-    return Number.isInteger(value) && value >= 0 && value < 255 ? value : null;
-}
-
-/**
- * Creates a type reference for definitions that reference another type without constraints.
- *
- * Type references are used when a definition simply refers to another type
- * without adding any additional constraints or structure.
- *
- * @param {Object} definition - The definition object containing type information
- * @returns {Object} A normalized type reference with alias set to null
- */
-function getTypeReference(definition) {
-    return enrichDefinition(definition, { alias: null, name: definition.type, base: null });
-}
-
-/**
- * Enriches a definition object with standard properties and type-specific traits.
- *
- * Determines if the definition is anonymous (lowercase name) or named (uppercase name).
- * Anonymous definitions are typically nested types within SEQUENCE or CHOICE structures.
- * Named definitions become reusable types with generated aliases for programmatic use.
- *
- * @param {Object} definition - The base definition object
- * @param {Object} traits - Additional type-specific properties to merge
- * @returns {Object} The enriched definition with alias, name, base, series, and traits
- */
-function enrichDefinition(definition, traits) {
-    const isNamed = /^[A-Z]/.test(definition.name);
-    return {
-        alias: isNamed ? toAlias(definition.name, definition.vendor) : null,
-        name: isNamed ? definition.name : null,
-        base: toAlias(definition.type),
-        series: !!definition.series,
-        ...traits
-    };
-}
-
-/**
- * Normalizes numeric type definitions (Unsigned, Integer, Real, Double).
- *
- * Converts range constraints to a normalized format:
- * - Single value ranges (min === max) become a single number
- * - Multi-value ranges become {minimum, maximum} objects
- *
- * @param {Object} definition - The numeric type definition
- * @returns {Object} Normalized definition with range constraint or type reference
- */
-function normalizeNumber(definition) {
-    if (!definition.range) {
-        return getTypeReference(definition);
+function normalizeItem(definition, prefix) {
+    if (typeof definition?.name !== 'string') {
+        throw new Error('Definition must have a name string.');
     }
-
-    return enrichDefinition(definition, {
-        range: definition.range.min === definition.range.max
-            ? definition.range.min
-            : { minimum: definition.range.min, maximum: definition.range.max }
-    });
-}
-
-/**
- * Normalizes string type definitions (OctetString, CharacterString).
- *
- * Converts size constraints to a normalized length format:
- * - Fixed size (min === max) becomes a single number
- * - Variable size becomes {minimum, maximum} object
- *
- * @param {Object} definition - The string type definition
- * @returns {Object} Normalized definition with length constraint or type reference
- */
-function normalizeString(definition) {
-    if (!definition.size) {
-        return getTypeReference(definition);
-    }
-
-    return enrichDefinition(definition, {
-        length: definition.size.min === definition.size.max
-            ? definition.size.min
-            : { minimum: definition.size.min, maximum: definition.size.max }
-    });
-}
-
-/**
- * Normalizes BIT STRING type definitions.
- *
- * Converts named bit definitions into a structured format with aliases and indices.
- * Calculates the minimum bit string length based on the highest bit index.
- * Handles special cases for known BACnet bit string types with custom ranges.
- *
- * Special handling for:
- * - BACnetAuditOperationFlags: 64-bit with standard/custom ranges
- * - BACnetObjectTypesSupported: Variable length 18-1024 bits
- * - BACnetServicesSupported: Variable length 35-512 bits
- *
- * @param {Object} definition - The BIT STRING type definition
- * @returns {Object} Normalized definition with bits array or type reference
- */
-function normalizeBitString(definition) {
-    if (!definition.items?.length) {
-        return getTypeReference(definition);
-    }
-
-    // Calculate minimum length based on highest bit index
-    const calculatedLength = Math.max(...definition.items.map(item => item.number)) + 1;
-
-    const traits = {
-        bits: definition.items.map(({ number, name }) => ({
-            alias: toAlias(name),
-            name,
-            index: number
-        })),
-        extensible: !!definition.extensible,
-        length: calculatedLength
-    };
-
-    // Handle length and ranges for known BACnet bit string types
-    switch (definition.name) {
-        case 'BACnetAuditOperationFlags':
-            traits.length = { minimum: calculatedLength, maximum: 64 };
-            traits.ranges = [
-                { custom: false, from: 0, to: 31 },
-                { custom: true, from: 32, to: 63 }
-            ];
-            break;
-
-        case 'BACnetObjectTypesSupported':
-            traits.length = { minimum: 18, maximum: 1024 };
-            traits.ranges = [
-                { custom: false, from: 0, to: 127 },
-                { custom: true, from: 128, to: 1023 }
-            ];
-            break;
-
-        case 'BACnetServicesSupported':
-            traits.length = { minimum: 35, maximum: 512 };
-            break;
-    }
-
-    return enrichDefinition(definition, traits);
-}
-
-/**
- * Normalizes ENUMERATED type definitions.
- *
- * Converts enumeration values into a structured format with aliases and values.
- * Calculates the valid range based on minimum and maximum enumeration values.
- * Handles special cases for known BACnet enumerated types with custom/reserved ranges.
- *
- * Special handling for:
- * - BACnetEngineeringUnits: Standard/custom value ranges
- * - BACnetPropertyIdentifier: Standard/custom value ranges
- * - Types with comment-based range documentation
- *
- * @param {Object} definition - The ENUMERATED type definition
- * @returns {Object} Normalized definition with items array or type reference
- */
-function normalizeEnumerated(definition) {
-    if (!definition.items?.length) {
-        return getTypeReference(definition);
-    }
-
-    // Calculate range based on enumeration values
-    const numbers = definition.items.map(item => item.number);
-    const minValue = Math.min(...numbers);
-    const maxValue = Math.max(...numbers) + 1;
-
-    const traits = {
-        items: definition.items.map(({ name, number }) => ({
-            alias: toAlias(name),
-            name,
-            value: number
-        })),
-        extensible: !!definition.extensible,
-        range: { minimum: minValue, maximum: maxValue }
-    };
-
-    // Handle constraints for known BACnet enumerated types
-    switch (definition.name) {
-        case 'BACnetEngineeringUnits':
-            traits.range.minimum = 0;
-            traits.range.maximum = 65535;
-            traits.ranges = [
-                { custom: false, from: 0, to: 255 },
-                { custom: false, from: 47808, to: 49999 },
-                { custom: true, from: 256, to: 47807 },
-                { custom: true, from: 50000, to: 65535 }
-            ];
-            break;
-
-        case 'BACnetPropertyIdentifier':
-            traits.range.minimum = 0;
-            traits.range.maximum = 4294967295;
-            traits.ranges = [
-                { custom: false, from: 0, to: 511 },
-                { custom: true, from: 512, to: 4194303 },
-                { custom: false, from: 4194304, to: 4294967295 }
-            ];
-            break;
-
-        default:
-            // Extract reserved/custom ranges from comment if available
-            if (!definition.extensible && definition.comment) {
-                const regex = /^Enumerated values (\d+)-(\d+) are reserved for definition by ASHRAE\. Enumerated values (\d+)-(\d+) may be used by others/;
-                const match = definition.comment.match(regex);
-
-                if (match) {
-                    traits.range.minimum = parseInt(match[1], 10);
-                    traits.range.maximum = parseInt(match[4], 10) + 1;
-                    traits.ranges = [
-                        {
-                            custom: false,
-                            from: traits.range.minimum,
-                            to: parseInt(match[2], 10)
-                        },
-                        {
-                            custom: true,
-                            from: parseInt(match[3], 10),
-                            to: parseInt(match[4], 10)
-                        }
-                    ];
-                }
-            }
-            break;
-    }
-
-    return enrichDefinition(definition, traits);
-}
-
-/**
- * Normalizes CHOICE type definitions.
- *
- * Converts choice alternatives into a structured format with:
- * - Aliases for each option (kebab-case)
- * - Recursively normalized types for each option
- * - Context tag numbers for BACnet encoding
- * - Extensibility marker if present
- *
- * @param {Object} definition - The CHOICE type definition
- * @returns {Object} Normalized definition with options array
- */
-function normalizeChoice(definition) {
-    return enrichDefinition(definition, {
-        options: (definition.items || []).map(item => ({
-            alias: toAlias(item.name),
-            name: item.name,
-            type: normalizeDefinition(item),
-            context: getContextNumber(item.number)
-        })),
-        extensible: !!definition.extensible
-    });
-}
-
-/**
- * Normalizes SEQUENCE type definitions.
- *
- * Converts sequence fields into a structured format with:
- * - Aliases for each field (kebab-case)
- * - Recursively normalized types for each field
- * - Context tag numbers for BACnet encoding
- * - Optional flags to indicate non-required fields
- *
- * @param {Object} definition - The SEQUENCE type definition
- * @returns {Object} Normalized definition with fields array
- */
-function normalizeSequence(definition) {
-    return enrichDefinition(definition, {
-        fields: (definition.items || []).map(item => ({
-            alias: toAlias(item.name),
-            name: item.name,
-            type: normalizeDefinition(item),
-            context: getContextNumber(item.number),
-            optional: !!item.optional
-        }))
-    });
+    const alias = definition.name;
+    const name = toBaclibName(alias, prefix);
+    // Only include alias if it differs from the normalized name
+    return alias === name ? { name } : { alias, name };
 }
 
 /**
@@ -667,27 +442,189 @@ function normalizeSequence(definition) {
  * @param {Object} definition - The parsed BACnet/BAClib ASN.1 definition to normalize
  * @returns {Object} The normalized definition with consistent structure
  */
-function normalizeDefinition(definition) {
+function normalizeDefinition(definition, level = 0) {
+
+    // Normalize the item name; for top-level (level=0) remove "BACnet" prefix
+    const result = normalizeItem(definition, level ? undefined : false);
+    if (!definition?.type) {
+        throw new Error('Definition must have a type.');
+    }
+    // Convert type name to kebab-case (e.g., "ENUMERATED" -> "enumerated")
+    result.type = toBaclibName(definition.type, false);
+
+    let itemsName;   // Property name for items array ('bits', 'values', 'options', or 'fields')
+    let itemsNumber; // Property name for item number ('position' or 'constant')
+    let traits = null;
+
+    // Determine how to handle items based on the type
     switch (definition.type) {
         case 'Unsigned':
         case 'Integer':
         case 'Real':
         case 'Double':
-            return normalizeNumber(definition);
+            if (definition.range) {
+                traits = { minimum: definition.range.min, maximum: definition.range.max };
+            }
+            break;
         case 'OctetString':
         case 'CharacterString':
-            return normalizeString(definition);
+            if (definition.size) {
+                const minimum = definition.size.min;
+                const maximum = definition.size.max;
+                traits = { length: minimum === maximum ? maximum : { minimum, maximum } };
+            }
+            break;
         case 'BitString':
-            return normalizeBitString(definition);
+            itemsName = 'bits';
+            itemsNumber = 'position';
+            break;
         case 'Enumerated':
-            return normalizeEnumerated(definition);
+            itemsName = 'values';
+            itemsNumber = 'constant';
+            break;
         case 'CHOICE':
-            return normalizeChoice(definition);
+            itemsName = 'options';
+            break;
         case 'SEQUENCE':
-            return normalizeSequence(definition);
-        default:
-            return getTypeReference(definition);
+            itemsName = 'fields';
+            break;
     }
+
+    // Add series constraint for SEQUENCE OF types
+    if (definition.series) {
+        traits = { series: definition.series, ...traits };
+    }
+
+    if (definition.items?.length) {
+        // For simple types (BitString/Enumerated), sort by number for consistent ordering
+        // For complex types (SEQUENCE/CHOICE), preserve definition order
+        const items = itemsNumber ? definition.items.slice().sort((a, b) => a.number - b.number) : definition.items;
+        traits = {
+            [itemsName]: items.map(item => {
+                const element = normalizeItem(item);
+                if (itemsNumber) {
+                    // Simple types: just add the number (position/constant) and return
+                    element[itemsNumber] = item.number;
+                    return element;
+                }
+                // Complex types: recursively normalize the item's type
+                element.type = normalizeDefinition(item, level + 1);
+
+                // Add context tag if defined
+                if (Number.isInteger(item.number) && item.number >= 0) {
+                    element.context = item.number;
+                }
+
+                // Mark SEQUENCE fields as optional if specified
+                if (definition.type === 'SEQUENCE' && item.optional) {
+                    element.optional = true;
+                }
+                return element;
+            })
+        };
+        // Apply special handling for known BACnet types
+        enhanceKnownTypes(definition, traits);
+    }
+
+    if (traits) {
+        result.type = { base: result.type, ...traits };
+        return result;
+    }
+    return level ? result.type : result;
+
+}
+
+/**
+ * Enhances known BACnet types with additional constraints and proprietary ranges.
+ *
+ * This function applies special handling for well-known BACnet types that have
+ * characteristics not fully captured in their ASN.1 definitions. It adds:
+ * - Extended value ranges beyond what's in the ASN.1
+ * - Proprietary value ranges reserved for vendor-specific extensions
+ * - Minimum bit/value lengths for bit strings and service flags
+ *
+ * The function modifies the `traits` object in place, adding or updating properties
+ * like `maximum`, `length`, and `proprietary`.
+ *
+ * Special Cases Handled:
+ * - **BACnetEngineeringUnits**: Extends to 65535, defines proprietary ranges
+ * - **BACnetPropertyIdentifier**: Extends to 4294967295, defines proprietary range
+ * - **BACnetAuditOperationFlags**: Sets length based on highest bit position + proprietary
+ * - **BACnetObjectTypesSupported**: Sets minimum 18 bits, max 1024, proprietary range
+ * - **BACnetServicesSupported**: Sets minimum 35 bits, max 512
+ * - **Extensible Enumerations**: Parses standard comment to extract proprietary ranges
+ *
+ * @param {Object} definition - The parsed ASN.1 definition being normalized
+ * @param {string} definition.name - The type name (e.g., "BACnetEngineeringUnits")
+ * @param {boolean} definition.extensible - True if the type is marked as extensible (...)
+ * @param {string} [definition.comment] - ASN.1 comment that may contain range information
+ * @param {Array} [definition.items] - Array of enumeration items (for bit position calculation)
+ * @param {Object} traits - The traits object to enhance (modified in place)
+ * @returns {boolean} True if the type was recognized and enhanced, false otherwise
+ */
+function enhanceKnownTypes(definition, traits) {
+
+    switch (definition.name) {
+
+        case 'BACnetEngineeringUnits':
+            traits.maximum = 65535;
+            traits.proprietary = [
+                { from: 256, to: 47807 },
+                { from: 50000, to: 65535 }
+            ];
+            return true;
+        case 'BACnetPropertyIdentifier':
+            traits.maximum = 4294967295;
+            traits.proprietary = { from: 512, to: 4194303 }
+            return true;
+        case 'BACnetAuditOperationFlags':
+            traits.length = { minimum: Math.max(...definition.items.map(item => item.number)) + 1, maximum: 64 };
+            traits.proprietary = { from: 32, to: 63 };
+            return true;
+        case 'BACnetObjectTypesSupported':
+            traits.length = { minimum: 18, maximum: 1024 };
+            traits.proprietary = { from: 128, to: 1023 }
+            return true;
+        case 'BACnetServicesSupported':
+            traits.length = { minimum: 35, maximum: 512 };
+            return true;
+    }
+
+    // If not extensible, no proprietary ranges to add
+    if (!definition.extensible) {
+        return false;
+    }
+
+    // Default (unknown) proprietary range (will be overridden if we can parse the comment)
+    traits.proprietary = { from: 1, to: 0 };
+
+    // For extensible enumerations, try to extract range information from standard comment
+    if (definition.type === 'Enumerated') {
+
+        // Standard BACnet comment format:
+        // "Enumerated values 0-255 are reserved for definition by ASHRAE. Enumerated values 256-65535 may be used by others"
+        const regex = /^Enumerated values (\d+)-(\d+) are reserved for definition by ASHRAE\. Enumerated values (\d+)-(\d+) may be used by others/;
+
+        // Normalize whitespace in comment before matching
+        const match = definition.comment?.replace(/\s+/g, ' ').match(regex);
+        if (match) {
+
+            // Extract: [1]=ASHRAE min, [2]=ASHRAE max, [3]=proprietary min, [4]=proprietary max
+            const minimum = parseInt(match[1], 10);
+            if (minimum !== 0) {
+                traits.minimum = minimum;
+            }
+
+            // Maximum is one past the last proprietary value (for exclusive range checking)
+            traits.maximum = parseInt(match[4], 10) + 1;
+
+            // Proprietary range is from match[3] to match[4] inclusive
+            traits.proprietary = { from: parseInt(match[3], 10), to: parseInt(match[4], 10) };
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**

@@ -1,5 +1,5 @@
 BAClibTimeStamp ::= CHOICE {
-    time [0] BAClibTime,
-    sequence-number [1] INTEGER,
-    date-time [2] BAClibDateTime
-}
+    time [0] BAClibTime,                    -- Simple time value
+    sequence-number [1] INTEGER,            -- Sequence counter
+    date-time [2] BAClibDateTime            -- Full date and time
+} -- Timestamp can be represented in multiple ways

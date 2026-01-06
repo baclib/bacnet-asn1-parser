@@ -1,6 +1,6 @@
 {
     "name": "@baclib/bacnet-asn1-parser",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "description": "Parse ASN.1 notation of BACnet data types",
     "type": "module",
     "main": "src/index.js",

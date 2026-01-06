@@ -3,6 +3,4 @@ BAClibEnumeration02 ::= ENUMERATED {
     on (1),
     auto (2),
     ...
-}
--- Enumerated values 0-16 are reserved.
--- Enumerated values 16-255 may be used by others.
+} -- Enumerated values 0-15 are reserved for definition by ASHRAE. Enumerated values 16-255 may be used by others
