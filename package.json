@@ -5,11 +5,13 @@
     "type": "module",
     "main": "src/index.js",
     "scripts": {
+        "regenerate": "node src/generate-predefined.js",
         "test": "node test/test-suite.js"
     },
     "keywords": [
-        "bacnet",
         "asn1",
+        "bacnet",
+        "building-automation",
         "parser"
     ],
     "author": "The BAClib Initiative <baclib@mailbox.org> (https://github.com/baclib)",
@@ -26,6 +28,6 @@
     },
     "homepage": "https://github.com/baclib/bacnet-asn1-parser#readme",
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=22"
     }
 }
