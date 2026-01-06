@@ -594,9 +594,6 @@ function enhanceKnownTypes(definition, traits) {
         return false;
     }
 
-    // Default (unknown) proprietary range (will be overridden if we can parse the comment)
-    traits.proprietary = { from: 1, to: 0 };
-
     // For extensible enumerations, try to extract range information from standard comment
     if (definition.type === 'Enumerated') {
 
@@ -613,9 +610,7 @@ function enhanceKnownTypes(definition, traits) {
             if (minimum !== 0) {
                 traits.minimum = minimum;
             }
-
-            // Maximum is one past the last proprietary value (for exclusive range checking)
-            traits.maximum = parseInt(match[4], 10) + 1;
+            traits.maximum = parseInt(match[4], 10);
 
             // Proprietary range is from match[3] to match[4] inclusive
             traits.proprietary = { from: parseInt(match[3], 10), to: parseInt(match[4], 10) };
@@ -623,7 +618,9 @@ function enhanceKnownTypes(definition, traits) {
         }
     }
 
-    return false;
+    // Default (unknown) proprietary range (will be overridden if we can parse the comment)
+    traits.proprietary = { from: 1, to: 0 };
+    return true;
 }
 
 /**
