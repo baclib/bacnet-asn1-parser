@@ -528,7 +528,6 @@ function normalizeDefinition(definition, level = 0) {
 
     if (traits) {
         result.type = { base: result.type, ...traits };
-        return result;
     }
     return level ? result.type : result;
 
