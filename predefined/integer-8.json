@@ -1,7 +1,9 @@
 {
     "alias": "Integer8",
     "name": "integer-8",
-    "type": "integer",
-    "minimum": -128,
-    "maximum": 127
+    "type": {
+        "base": "integer",
+        "minimum": -128,
+        "maximum": 127
+    }
 }

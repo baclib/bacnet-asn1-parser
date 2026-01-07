@@ -12,133 +12,122 @@
         },
         {
             "name": "Unsigned",
-            "primitive": 1,
-            "maximum": "MAX"
+            "primitive": 1
         },
         {
             "name": "Unsigned8",
-            "type": "Unsigned",
+            "base": "Unsigned",
             "maximum": 255
         },
         {
             "name": "Unsigned16",
-            "type": "Unsigned",
+            "base": "Unsigned",
             "maximum": 65535
         },
         {
             "name": "Unsigned32",
-            "type": "Unsigned",
+            "base": "Unsigned",
             "maximum": 4294967295
         },
         {
             "name": "Unsigned64",
-            "type": "Unsigned",
+            "base": "Unsigned",
             "maximum": "18446744073709551615"
         },
         {
             "name": "Integer",
-            "primitive": 3,
-            "minimum": "MIN",
-            "maximum": "MAX"
+            "primitive": 3
         },
         {
             "name": "Integer8",
-            "type": "Integer",
+            "base": "Integer",
             "minimum": -128,
             "maximum": 127
         },
         {
             "name": "Integer16",
-            "type": "Integer",
+            "base": "Integer",
             "minimum": -32768,
             "maximum": 32767
         },
         {
             "name": "Integer32",
-            "type": "Integer",
+            "base": "Integer",
             "minimum": -2147483648,
             "maximum": 2147483647
         },
         {
             "name": "Integer64",
-            "type": "Integer",
+            "base": "Integer",
             "minimum": "-9223372036854775808",
             "maximum": "9223372036854775807"
         },
         {
             "name": "Real",
-            "primitive": 4,
-            "minimum": -3.4028234663852886e+38,
-            "maximum": 3.4028234663852886e+38
+            "primitive": 4
         },
         {
             "name": "Double",
-            "primitive": 5,
-            "minimum": -1.7976931348623157e+308,
-            "maximum": 1.7976931348623157e+308
+            "primitive": 5
         },
         {
             "name": "OctetString",
-            "primitive": 6,
-            "length": 4294967295
+            "primitive": 6
         },
         {
             "name": "CharacterString",
-            "primitive": 7,
-            "length": 4294967295
+            "primitive": 7
         },
         {
             "name": "String",
-            "type": "CharacterString"
+            "base": "CharacterString"
         },
         {
             "name": "BitString",
-            "primitive": 8,
-            "length": 4294967295
+            "primitive": 8
         },
         {
             "name": "BitString8",
-            "type": "BitString",
+            "base": "BitString",
             "length": 8
         },
         {
             "name": "BitString16",
-            "type": "BitString",
+            "base": "BitString",
             "length": 16
         },
         {
             "name": "BitString32",
-            "type": "BitString",
+            "base": "BitString",
             "length": 32
         },
         {
             "name": "BitString64",
-            "type": "BitString",
+            "base": "BitString",
             "length": 64
         },
         {
             "name": "Enumerated",
-            "primitive": 9,
-            "maximum": "MAX"
+            "primitive": 9
         },
         {
             "name": "Enumerated8",
-            "type": "Enumerated",
+            "base": "Enumerated",
             "maximum": 255
         },
         {
             "name": "Enumerated16",
-            "type": "Enumerated",
+            "base": "Enumerated",
             "maximum": 65535
         },
         {
             "name": "Enumerated32",
-            "type": "Enumerated",
+            "base": "Enumerated",
             "maximum": 4294967295
         },
         {
             "name": "Enumerated64",
-            "type": "Enumerated",
+            "base": "Enumerated",
             "maximum": "18446744073709551615"
         },
         {
@@ -147,7 +136,7 @@
         },
         {
             "name": "Date",
-            "type": "DatePattern"
+            "base": "DatePattern"
         },
         {
             "name": "TimePattern",
@@ -155,7 +144,7 @@
         },
         {
             "name": "Time",
-            "type": "TimePattern"
+            "base": "TimePattern"
         },
         {
             "name": "BACnetObjectIdentifier",
@@ -163,19 +152,19 @@
         },
         {
             "name": "ANY",
-            "primitive": 16
+            "primitive": -1
         },
         {
             "name": "CHOICE",
-            "primitive": 17
+            "primitive": -2
         },
         {
             "name": "SEQUENCE",
-            "primitive": 18
+            "primitive": -3
         },
         {
             "name": "BACnetWeekNDay",
-            "type": "OctetString",
+            "base": "OctetString",
             "size": 3
         }
     ]

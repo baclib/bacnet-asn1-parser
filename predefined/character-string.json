@@ -1,9 +1,5 @@
 {
     "alias": "CharacterString",
     "name": "character-string",
-    "primitive": 7,
-    "length": {
-        "minimum": 0,
-        "maximum": 4294967295
-    }
+    "primitive": 7
 }

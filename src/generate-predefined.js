@@ -36,7 +36,9 @@ import predefinedAbstract from './predefined-abstract.json' with { type: 'json' 
  * Transformation Process:
  * - Maps each abstract definition to a normalized type object
  * - Converts type names to BAClib kebab-case format using toBaclibName()
- * - Preserves primitive type indicators (application tags)
+ * - Preserves primitive type indicators:
+ *   - 0-15: BACnet application tags for primitive data types
+ *   - Negative values for special constructions: -1 = any, -2 = choice, -3 = sequence
  * - Resolves type references to base types
  * - Normalizes range constraints (minimum/maximum values)
  * - Handles length and size constraints for string types
@@ -46,19 +48,32 @@ import predefinedAbstract from './predefined-abstract.json' with { type: 'json' 
  * 
  * - `alias` (string): Original type name in PascalCase (e.g., "Unsigned8", "BitString")
  * - `name` (string): BAClib kebab-case identifier (e.g., "unsigned-8", "bit-string")
- * - `primitive` (number, optional): BACnet application tag number (0-15) for primitive types
- * - `type` (string, optional): Reference to a base type name (e.g., "unsigned" for Unsigned8)
- * - `minimum` (string|number, optional): Minimum value constraint for numerical types
- * - `maximum` (string|number, optional): Maximum value constraint for numerical types
- * - `length` (object|number, optional): Length constraints for string/octet types
- *   - When object: { minimum: number, maximum: number }
- *   - When number: fixed size value
+ * - `primitive` (number, optional): Type indicator:
+ *   - 0-15: BACnet application tag for primitive data types
+ *   - -1: Any type, -2: Choice construction, -3: Sequence construction
+ * - `type` (string|object, optional): Type reference, which can be:
+ *   - A string: Simple reference to a base type (when no constraints are present)
+ *   - An object: Complex type with constraints, containing:
+ *     - `base` (string): Reference to the base type name
+ *     - `minimum` (string|number, optional): Minimum value constraint for numerical types.
+ *       Can be a string to safely represent 64-bit integers (which JSON doesn't natively
+ *       support) or special values like MIN, MAX, INF, NAN, etc.
+ *     - `maximum` (string|number, optional): Maximum value constraint for numerical types.
+ *       Can be a string to safely represent 64-bit integers (which JSON doesn't natively
+ *       support) or special values like MIN, MAX, INF, NAN, etc.
+ *     - `length` (number, optional): Fixed length constraint for string/octet types
  *
  * Constraint Handling:
- * - Range constraints (minimum/maximum) are only included when a maximum is defined
- * - If minimum is not explicitly defined, it defaults to 0
- * - Special values like "MAX", "MIN" are preserved as strings for later resolution
- * - Length constraints can be either a fixed size or a range object
+ * - Type property structure depends on presence of constraints:
+ *   - Simple string: When only base type is needed (e.g., alias with no additional constraints)
+ *   - Object with base + constraints: When any constraints (range, length, size) are present
+ * - Range constraints (minimum/maximum) are added to the type object when maximum is defined
+ * - If minimum is not explicitly defined in the source, it defaults to 0
+ * - Minimum and maximum values can be strings or numbers:
+ *   - Strings are used to safely represent 64-bit integers (which JSON doesn't natively support)
+ *   - Strings are also used for special values like MIN, MAX, INF, NAN when required
+ * - Length constraints: Created as { minimum: 0, maximum: <value> } from the length property
+ * - Size constraints: Applied directly as a fixed length value from the size property
  *
  * @returns {Array<Object>} Array of normalized predefined BACnet/BAClib type definitions.
  *                          Each object represents a complete type specification ready for
@@ -68,50 +83,54 @@ import predefinedAbstract from './predefined-abstract.json' with { type: 'json' 
  * const types = generatePredefined();
  * // Returns:
  * // [
- * //   { alias: "Unsigned8", name: "unsigned-8", primitive: 1, minimum: 0, maximum: 255 },
- * //   { alias: "Integer32", name: "integer-32", base: 3, minimum: -2147483648, maximum: 2147483647 },
- * //   { alias: "BACnetWeekNDay", name: "week-n-day", type: "octet-string", length: 3 }
+ * //   { alias: "Null", name: "null", primitive: 0 },
+ * //   { alias: "Unsigned8", name: "unsigned-8", type: { base: "unsigned", minimum: 0, maximum: 255 } },
+ * //   { alias: "BACnetWeekNDay", name: "week-n-day", type: { base: "octet-string", length: 3 } }
  * // ]
  */
 export function generatePredefined() {
 
-    return predefinedAbstract.definitions.map(definition => {
+    return predefinedAbstract.definitions.map(predefined => {
 
-        // Initialize type with required properties (alias and name)
-        const type = {
-            alias: definition.name,
-            name: toBaclibName(definition.name, false)
+        // Initialize type definition with required properties (alias and name)
+        const definition = {
+            alias: predefined.name,
+            name: toBaclibName(predefined.name, false)
         };
 
-        // Copy primitive tag number if defined (e.g., 0 for Null, 1 for Boolean/Unsigned)
-        if (Object.hasOwn(definition, 'primitive')) {
-            type.primitive = definition.primitive;
+        // Return primitive type definition
+        if (Object.hasOwn(predefined, 'primitive')) {
+            definition.primitive = predefined.primitive;
+            return definition;
         }
 
-        // Copy type reference if defined (e.g., "Unsigned" for Unsigned8)
-        if (Object.hasOwn(definition, 'type')) {
-            type.type = toBaclibName(definition.type, false);
-        }
+        // Set type property with base reference
+        // Use simple string if only name and base are present (no constraints)
+        // Otherwise, use object structure to accommodate constraints
+        const base = toBaclibName(predefined.base, false);
+        definition.type = Object.keys(predefined).length === 2 ? base : { base };
 
         // Handle range constraints for numerical types
-        // Only add range if maximum is defined; minimum defaults to 0 if not specified
-        if (Object.hasOwn(definition, 'maximum')) {
-            type.minimum = Object.hasOwn(definition, 'minimum') ? definition.minimum : 0;
-            type.maximum = definition.maximum;
+        // Add minimum and maximum to the type object when maximum is defined
+        // Minimum defaults to 0 if not specified in the abstract definition
+        if (Object.hasOwn(predefined, 'maximum')) {
+            definition.type.minimum = Object.hasOwn(predefined, 'minimum') ? predefined.minimum : 0;
+            definition.type.maximum = predefined.maximum;
         }
 
-        // Handle length constraints for string types
-        // Creates a range object { minimum: 0, maximum: <length> }
-        if (Object.hasOwn(definition, 'length')) {
-            type.length = { minimum: 0, maximum: definition.length };
+        // Handle length constraints for string/bit-string types
+        // Converts length value to range object { minimum: 0, maximum: <length> }
+        if (Object.hasOwn(predefined, 'length')) {
+            definition.type.length = { minimum: 0, maximum: predefined.length };
         }
 
-        // Handle size constraints (fixed length)
-        if (Object.hasOwn(definition, 'size')) {
-            type.length = definition.size;
+        // Handle size constraints for octet-string types
+        // Apply size directly as a fixed length value (not a range object)
+        if (Object.hasOwn(predefined, 'size')) {
+            definition.type.length = predefined.size;
         }
 
-        return type;
+        return definition;
     });
 }
 

@@ -1,7 +1,5 @@
 {
     "alias": "Integer",
     "name": "integer",
-    "primitive": 3,
-    "minimum": "MIN",
-    "maximum": "MAX"
+    "primitive": 3
 }

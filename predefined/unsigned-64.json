@@ -1,7 +1,9 @@
 {
     "alias": "Unsigned64",
     "name": "unsigned-64",
-    "type": "unsigned",
-    "minimum": 0,
-    "maximum": "18446744073709551615"
+    "type": {
+        "base": "unsigned",
+        "minimum": 0,
+        "maximum": "18446744073709551615"
+    }
 }

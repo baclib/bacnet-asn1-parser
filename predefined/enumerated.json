@@ -1,7 +1,5 @@
 {
     "alias": "Enumerated",
     "name": "enumerated",
-    "primitive": 9,
-    "minimum": 0,
-    "maximum": "MAX"
+    "primitive": 9
 }

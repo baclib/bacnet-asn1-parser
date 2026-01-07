@@ -1,7 +1,9 @@
 {
     "alias": "Enumerated16",
     "name": "enumerated-16",
-    "type": "enumerated",
-    "minimum": 0,
-    "maximum": 65535
+    "type": {
+        "base": "enumerated",
+        "minimum": 0,
+        "maximum": 65535
+    }
 }

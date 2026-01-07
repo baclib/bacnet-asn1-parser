@@ -1,7 +1,5 @@
 {
     "alias": "Unsigned",
     "name": "unsigned",
-    "primitive": 1,
-    "minimum": 0,
-    "maximum": "MAX"
+    "primitive": 1
 }

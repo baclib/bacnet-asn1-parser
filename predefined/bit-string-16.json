@@ -1,9 +1,11 @@
 {
     "alias": "BitString16",
     "name": "bit-string-16",
-    "type": "bit-string",
-    "length": {
-        "minimum": 0,
-        "maximum": 16
+    "type": {
+        "base": "bit-string",
+        "length": {
+            "minimum": 0,
+            "maximum": 16
+        }
     }
 }
