@@ -73,7 +73,8 @@ export function toBaclibName(string, prefix) {
     let result = string
         .replace(/BACnet/g, 'Bacnet')
         .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-        .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2');
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+        .replace(/\s+/g, '-');
 
     // Add dashes between letters and digits only if string starts with uppercase
     if (/^[A-Z]/.test(string)) {
