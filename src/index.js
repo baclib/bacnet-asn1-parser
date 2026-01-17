@@ -500,6 +500,7 @@ function normalizeDefinition(definition, level = 0) {
         // For complex types (SEQUENCE/CHOICE), preserve definition order
         const items = itemsNumber ? definition.items.slice().sort((a, b) => a.number - b.number) : definition.items;
         traits = {
+            ...traits,
             [itemsName]: items.map(item => {
                 const element = normalizeItem(item);
                 if (itemsNumber) {
