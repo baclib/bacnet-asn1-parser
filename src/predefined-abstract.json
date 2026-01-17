@@ -163,6 +163,10 @@
             "primitive": -3
         },
         {
+            "name": "SEQUENCE OF",
+            "primitive": -4
+        },
+        {
             "name": "BACnetWeekNDay",
             "base": "OctetString",
             "size": 3
